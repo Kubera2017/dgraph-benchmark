@@ -29,7 +29,13 @@ func contains(s []string, e string) bool {
 }
 
 func main() {
-	conn, err := grpc.Dial("127.0.0.1:9080", grpc.WithInsecure())
+
+	dbHost := "127.0.0.1:9080"
+	domainsCount := 1000000
+	backlinksCount := 1000 // backlinks per domain (batch size)
+	breakAt := 100         // total number of batches to procced
+
+	conn, err := grpc.Dial(dbHost, grpc.WithInsecure())
 	if err != nil {
 		log.Fatal("While trying to dial gRPC")
 	}
@@ -56,9 +62,6 @@ func main() {
 		log.Fatal(err)
 	}
 	fmt.Println("Schema done")
-
-	domainsCount := 1000000
-	backlinksCount := 10000
 
 	for i := 0; i < domainsCount; i++ {
 		mutations := make([]*api.Mutation, 0, 4)
@@ -196,7 +199,7 @@ func main() {
 
 		tBatchEnd := time.Now()
 		fmt.Println(i, "Batch done", tBatchEnd.Sub(tBatchStart))
-		if i > 300 {
+		if i > breakAt-1 {
 			break
 		}
 	}
