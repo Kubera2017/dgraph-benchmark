@@ -199,7 +199,7 @@ func main() {
 
 		tBatchEnd := time.Now()
 		fmt.Println(i, "Batch done", tBatchEnd.Sub(tBatchStart))
-		if i > breakAt-1 {
+		if breakAt > 0 && i > breakAt-1 {
 			break
 		}
 	}
