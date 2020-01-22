@@ -1,4 +1,4 @@
-module dgraph-bm
+module main
 
 go 1.13
 
