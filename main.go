@@ -24,13 +24,14 @@ func main() {
 	dropDB(dgraph)
 	applySchema(dgraph)
 
-	var chs [workersCount]chan Batch
-	for i := range chs {
-		chs[i] = make(chan Batch)
-		go worker(dgraph, chs[i])
+	var dataChs [workersCount]chan Batch
+	jobRequestsCh := make(chan int)
+	for i := range dataChs {
+		dataChs[i] = make(chan Batch)
+		go worker(dgraph, i, jobRequestsCh, dataChs[i])
 	}
 	chM := make(chan bool)
-	go manager(chM, chs)
+	go manager(chM, jobRequestsCh, dataChs)
 
 	_ = <-chM
 	fmt.Println("Done")

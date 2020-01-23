@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"strconv"
 	"strings"
@@ -12,9 +11,12 @@ import (
 	"github.com/dgraph-io/dgo/v2/protos/api"
 )
 
-func worker(dgraph *dgo.Dgraph, c chan Batch) {
+func worker(dgraph *dgo.Dgraph, id int, jobRequestsCh chan int, dataCh chan Batch) {
 	ctx := context.Background()
-	for batch := range c {
+
+	jobRequestsCh <- id
+
+	for batch := range dataCh {
 
 		mutations := make([]*api.Mutation, 0, 4)
 		variables := make(map[string]string)
@@ -114,11 +116,13 @@ func worker(dgraph *dgo.Dgraph, c chan Batch) {
 			CommitNow: true,
 			Mutations: mutations,
 		}
-		response, err := dgraph.NewTxn().Do(ctx, req)
+		_, err := dgraph.NewTxn().Do(ctx, req)
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Println(response.Latency)
+		// fmt.Println(response.Latency)
+
+		jobRequestsCh <- id
 	}
 
 }
